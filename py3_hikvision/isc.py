@@ -12,6 +12,10 @@ from jsonschema.validators import Draft202012Validator
 from requests import Response
 
 
+class UrlSettings:
+    pass
+
+
 class Isc(object):
     """
     综合安防管理平台（iSecure Center）
