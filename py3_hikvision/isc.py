@@ -6,14 +6,48 @@ import hmac
 import uuid
 from datetime import datetime
 
+import py3_requests
 import requests
 from addict import Dict
 from jsonschema.validators import Draft202012Validator
 from requests import Response
 
 
-class UrlSettings:
+class RequestUrl:
     pass
+
+
+class ValidatorJsonSchema:
+    """
+    json schema settings
+    """
+    NORMAL_SCHEMA = {
+        "type": "object",
+        "properties": {
+            "code": {
+                "oneOf": [
+                    {"type": "string", "const": "0"},
+                    {"type": "integer", "const": 0},
+                ]
+            },
+        },
+        "required": ["code", "data"]
+    }
+
+
+class ResponseHandler:
+    """
+    response handler
+    """
+
+    @staticmethod
+    def normal_handler(response: Response = None):
+        if isinstance(response, Response) and response.status_code == 200:
+            json_addict = Dict(response.json())
+            if Draft202012Validator(ValidatorJsonSchema.NORMAL_SCHEMA).is_valid(instance=json_addict):
+                return json_addict.get("data", Dict())
+            return None
+        raise Exception(f"Response Handler Error {response.status_code}|{response.text}")
 
 
 class Isc(object):
@@ -37,32 +71,9 @@ class Isc(object):
         :param ak:
         :param sk:
         """
-        self.host = host if isinstance(host, str) else ""
-        self.ak = ak if isinstance(ak, str) else ""
-        self.sk = sk if isinstance(sk, str) else ""
-
-    def _default_response_handler(self, response: Response = None):
-        """
-        default response handler
-        :param response: requests.Response instance
-        :return:
-        """
-        if isinstance(response, Response) and response.status_code == 200:
-            json_addict = Dict(response.json())
-            if Draft202012Validator({
-                "type": "object",
-                "properties": {
-                    "code": {
-                        "oneOf": [
-                            {"type": "string", "const": "0"},
-                            {"type": "integer", "const": 0},
-                        ]
-                    },
-                },
-                "required": ["code", "data"]
-            }).is_valid(json_addict):
-                return json_addict.data, response
-        return False, response
+        self.host = host
+        self.ak = ak
+        self.sk = sk
 
     def timestamp(self):
         return int(datetime.now().timestamp() * 1000)
@@ -111,23 +122,22 @@ class Isc(object):
 
     def request_with_signature(
             self,
-            method: str = "POST",
-            path: str = None,
             **kwargs
     ):
         """
         request with signature
-
         @see https://open.hikvision.com/docs/docId?productId=5c67f1e2f05948198c909700&version=%2Ff95e951cefc54578b523d1738f65f0a1
-        :param method:
-        :param path:
         :param kwargs:
         :return:
         """
-        method = method if isinstance(method, str) else "POST"
-        path = path if isinstance(path, str) else ""
-        if not path.startswith("/"):
-            path = f"/{path}"
-        headers = kwargs.pop("headers", {})
-        kwargs["headers"] = self.headers(method=method, path=path, headers=headers)
-        return requests.request(method=method, url=f"{self.host}{path}", **kwargs)
+        kwargs = Dict(kwargs)
+        kwargs.setdefault("method", "POST")
+        kwargs.setdefault("response_handler", ResponseHandler.normal_handler)
+        kwargs.setdefault("url", "")
+        kwargs.setdefault("headers", Dict())
+        kwargs["headers"] = self.headers(
+            method=kwargs.get("method", "POST"),
+            path=kwargs.get("url", ""),
+            headers=kwargs.get("headers", Dict())
+        )
+        return py3_requests.request(**kwargs.to_dict())

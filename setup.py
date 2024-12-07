@@ -25,10 +25,10 @@ setup(
     author="guolei",
     author_email="174000902@qq.com",
     license="MIT",
-    keywors=["hikvision", "海康威视", "人脸识别", "物业管理", "物管", "智慧社区", "智慧车场"],
+    keywors=["hikvision", "海康威视", "人脸识别", "物业管理", "物管", "智慧社区", "智慧车场", "guolei", "郭磊"],
     packages=setuptools.find_packages('./'),
     install_requires=[
-        "requests",
+        "py3-requests",
         "addict",
         "retrying",
         "jsonschema",
