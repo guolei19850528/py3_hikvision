@@ -12,33 +12,33 @@ from addict import Dict
 from jsonschema.validators import Draft202012Validator
 from requests import Response
 
-request_urls = Dict()
+
+class RequestUrl(py3_requests.RequestUrl):
+    pass
 
 
-
-
-validator_json_schemas = Dict()
-validator_json_schemas.normal = Dict({
-    "type": "object",
-    "properties": {
-        "code": {
-            "oneOf": [
-                {"type": "string", "const": "0"},
-                {"type": "integer", "const": 0},
-            ]
+class ValidatorJsonSchema(py3_requests.ValidatorJsonSchema):
+    SUCCESS = Dict({
+        "type": "object",
+        "properties": {
+            "code": {
+                "oneOf": [
+                    {"type": "string", "const": "0"},
+                    {"type": "integer", "const": 0},
+                ]
+            },
         },
-    },
-    "required": ["code", "data"]
-})
+        "required": ["code", "data"]
+    })
 
 
-def normal_response_handler(response: Response = None):
-    if isinstance(response, Response) and response.status_code == 200:
-        json_addict = Dict(response.json())
-        if Draft202012Validator(validator_json_schemas.normal).is_valid(instance=json_addict):
-            return json_addict.get("data", Dict())
+class ResponseHandler(py3_requests.ResponseHandler):
+    @staticmethod
+    def success(response: Response = None):
+        json_addict = ResponseHandler.status_code_200_json_addict(response=response)
+        if Draft202012Validator(ValidatorJsonSchema.SUCCESS).is_valid(instance=json_addict):
+            return json_addict.get("data", None)
         return None
-    raise Exception(f"Response Handler Error {response.status_code}|{response.text}")
 
 
 class Isc(object):
@@ -62,7 +62,7 @@ class Isc(object):
         :param ak:
         :param sk:
         """
-        self.host = host
+        self.host = host[:-1] if host.endswith("/") else host
         self.ak = ak
         self.sk = sk
 
@@ -123,7 +123,7 @@ class Isc(object):
         """
         kwargs = Dict(kwargs)
         kwargs.setdefault("method", "POST")
-        kwargs.setdefault("response_handler", normal_response_handler)
+        kwargs.setdefault("response_handler", ResponseHandler.success)
         kwargs.setdefault("url", "")
         kwargs.setdefault("headers", Dict())
         kwargs["headers"] = self.headers(
