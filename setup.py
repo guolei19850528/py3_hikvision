@@ -34,6 +34,8 @@ setup(
         "jsonschema",
         "diskcache",
         "redis",
+        "setuptools",
+        "wheel",
     ],
     python_requires='>=3.0',
     zip_safe=False
