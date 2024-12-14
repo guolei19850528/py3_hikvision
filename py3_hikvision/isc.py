@@ -7,7 +7,6 @@ import uuid
 from datetime import datetime
 
 import py3_requests
-import requests
 from addict import Dict
 from jsonschema.validators import Draft202012Validator
 from requests import Response
@@ -83,11 +82,11 @@ class Isc(object):
 
     def headers(
             self,
-            method: str = "POST",
+            method: str = py3_requests.RequestMethod.POST,
             path: str = "",
             headers: dict = {}
     ):
-        method = method if isinstance(method, str) else "POST"
+        method = method if isinstance(method, str) else py3_requests.RequestMethod.POST
         path = path if isinstance(path, str) else ""
         headers = headers if isinstance(headers, dict) else {}
         headers = {
@@ -122,12 +121,12 @@ class Isc(object):
         :return:
         """
         kwargs = Dict(kwargs)
-        kwargs.setdefault("method", "POST")
+        kwargs.setdefault("method", py3_requests.RequestMethod.POST)
         kwargs.setdefault("response_handler", ResponseHandler.success)
         kwargs.setdefault("url", "")
         kwargs.setdefault("headers", Dict())
         kwargs["headers"] = self.headers(
-            method=kwargs.get("method", "POST"),
+            method=kwargs.get("method", py3_requests.RequestMethod.POST),
             path=kwargs.get("url", ""),
             headers=kwargs.get("headers", Dict())
         )
