@@ -125,6 +125,13 @@ class Isc(object):
         kwargs.setdefault("response_handler", ResponseHandler.success)
         kwargs.setdefault("url", "")
         kwargs.setdefault("headers", Dict())
+        url = kwargs.get("url", "")
+        if not url.startswith("/artemis"):
+            if not url.startswith("/"):
+                url = f"/artemis/{url}"
+            else:
+                url = f"/artemis{url}"
+        kwargs["url"] = url
         kwargs["headers"] = self.headers(
             method=kwargs.get("method", py3_requests.RequestMethod.POST),
             path=kwargs.get("url", ""),
