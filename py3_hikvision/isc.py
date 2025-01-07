@@ -13,7 +13,26 @@ from requests import Response
 
 
 class RequestUrl(py3_requests.RequestUrl):
-    pass
+    ARTEMIS_API_RESOURCE_V1_ORG_ORGLIST = "/artemis/api/resource/v1/org/orgList"
+    ARTEMIS_API_RESOURCE_V1_ORG_ORGINDEXCODES_ORGINFO = "/artemis/api/resource/v1/org/orgIndexCodes/orgInfo"
+    ARTEMIS_API_PMS_V1_CAR_CHARGE = "/artemis/api/pms/v1/car/charge"
+    ARTEMIS_API_PMS_V1_CAR_CHARGE_DELETION = "/artemis/api/pms/v1/car/charge/deletion"
+    ARTEMIS_API_PMS_V1_CAR_CHARGE_PAGE = "/artemis/api/pms/v1/car/charge/page"
+    ARTEMIS_API_PMS_V1_TEMPCARINRECORDS_PAGE = "/artemis/api/pms/v1/tempCarInRecords/page"
+    ARTEMIS_API_RESOURCE_V1_VEHICLE_BATCH_ADD = "/artemis/api/resource/v1/vehicle/batch/add"
+    ARTEMIS_API_RESOURCE_V1_VEHICLE_SINGLE_UPDATE = "/artemis/api/resource/v1/vehicle/single/update"
+    ARTEMIS_API_RESOURCE_V1_VEHICLE_BATCH_DELETE = "/artemis/api/resource/v1/vehicle/batch/delete"
+    ARTEMIS_API_RESOURCE_V2_VEHICLE_ADVANCE_VEHICLELIST = "/artemis/api/resource/v2/vehicle/advance/vehicleList"
+    ARTEMIS_API_RESOURCE_V2_PERSON_SINGLE_ADD = "/artemis/api/resource/v2/person/single/add"
+    ARTEMIS_API_RESOURCE_V1_PERSON_SINGLE_UPDATE = "/artemis/api/resource/v1/person/single/update"
+    ARTEMIS_API_RESOURCE_V1_PERSON_BATCH_DELETE = "/artemis/api/resource/v1/person/batch/delete"
+    ARTEMIS_API_RESOURCE_V1_FACE_SINGLE_ADD = "/artemis/api/resource/v1/face/single/add"
+    ARTEMIS_API_RESOURCE_V1_FACE_SINGLE_UPDATE = "/artemis/api/resource/v1/face/single/update"
+    ARTEMIS_API_RESOURCE_V1_FACE_SINGLE_DELETE = "/artemis/api/resource/v1/face/single/delete"
+    ARTEMIS_API_RESOURCE_V2_PERSON_ORGINDEXCODE_PERSONLIST = "/artemis/api/resource/v2/person/orgIndexCode/personList"
+    ARTEMIS_API_RESOURCE_V2_PERSON_ADVANCE_PERSONLIST = "/artemis/api/resource/v2/person/advance/personList"
+    ARTEMIS_API_RESOURCE_V1_PERSON_CONDITION_PERSONINFO = "/artemis/api/resource/v1/person/condition/personInfo"
+    ARTEMIS_API_RESOURCE_V1_PERSON_PICTURE = "/artemis/api/resource/v1/person/picture"
 
 
 class ValidatorJsonSchema(py3_requests.ValidatorJsonSchema):
@@ -40,7 +59,7 @@ class ResponseHandler(py3_requests.ResponseHandler):
         return None
 
 
-class Isc(object):
+class ISC(object):
     """
     综合安防管理平台（iSecure Center）
 
@@ -124,17 +143,13 @@ class Isc(object):
         kwargs.setdefault("method", py3_requests.RequestMethod.POST)
         kwargs.setdefault("response_handler", ResponseHandler.success)
         kwargs.setdefault("url", "")
+        kwargs.setdefault("verify", False)
         kwargs.setdefault("headers", Dict())
-        url = kwargs.get("url", "")
-        if not url.startswith("/artemis"):
-            if not url.startswith("/"):
-                url = f"/artemis/{url}"
-            else:
-                url = f"/artemis{url}"
-        kwargs["url"] = url
         kwargs["headers"] = self.headers(
             method=kwargs.get("method", py3_requests.RequestMethod.POST),
             path=kwargs.get("url", ""),
             headers=kwargs.get("headers", Dict())
         )
+        if not kwargs.get("url", "").startswith("http"):
+            kwargs["url"] = self.host + kwargs["url"]
         return py3_requests.request(**kwargs.to_dict())
